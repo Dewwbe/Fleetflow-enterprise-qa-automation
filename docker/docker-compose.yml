@@ -1,0 +1,103 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: fleetflow-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fleetflow-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  auth-service:
+    build: ../application/auth-service
+    container_name: fleetflow-auth-service
+    env_file: ../.env
+    environment:
+      - PORT=4001
+    ports:
+      - "4001:4001"
+    depends_on:
+      - mongo
+
+  vehicle-service:
+    build: ../application/vehicle-service
+    container_name: fleetflow-vehicle-service
+    env_file: ../.env
+    environment:
+      - PORT=4002
+    ports:
+      - "4002:4002"
+    depends_on:
+      - mongo
+
+  driver-service:
+    build: ../application/driver-service
+    container_name: fleetflow-driver-service
+    env_file: ../.env
+    environment:
+      - PORT=4003
+    ports:
+      - "4003:4003"
+    depends_on:
+      - mongo
+
+  booking-service:
+    build: ../application/booking-service
+    container_name: fleetflow-booking-service
+    env_file: ../.env
+    environment:
+      - PORT=4004
+    ports:
+      - "4004:4004"
+    depends_on:
+      - mongo
+      - rabbitmq
+      - vehicle-service
+      - driver-service
+
+  trip-service:
+    build: ../application/trip-service
+    container_name: fleetflow-trip-service
+    env_file: ../.env
+    environment:
+      - PORT=4005
+    ports:
+      - "4005:4005"
+    depends_on:
+      - mongo
+      - rabbitmq
+      - booking-service
+      - driver-service
+
+  maintenance-service:
+    build: ../application/maintenance-service
+    container_name: fleetflow-maintenance-service
+    env_file: ../.env
+    environment:
+      - PORT=4006
+    ports:
+      - "4006:4006"
+    depends_on:
+      - mongo
+      - vehicle-service
+
+  frontend:
+    build: ../application/frontend
+    container_name: fleetflow-frontend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:4004
+    ports:
+      - "5173:5173"
+    depends_on:
+      - booking-service
+
+volumes:
+  mongo-data:
