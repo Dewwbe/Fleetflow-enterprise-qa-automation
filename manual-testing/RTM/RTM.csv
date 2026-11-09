@@ -1,0 +1,7 @@
+Requirement ID,Requirement,Test Case(s),Automated?,Status
+REQ-01,Employee can request a vehicle booking,TC-BK-001,Yes (Selenium + REST Assured),Not started
+REQ-02,System prevents double-booking of a vehicle,TC-BK-002; TC-BK-008,Yes (JMeter),Not started
+REQ-03,Fleet manager can approve/reject bookings,TC-BK-005; TC-BK-006; TC-BK-007,Yes (Playwright),Not started
+REQ-04,Driver assignment validates licence and availability,TC-DR-001 through TC-DR-004,Yes (REST Assured),Not started
+REQ-05,Maintenance scheduling updates vehicle availability,TC-MT-001; TC-MT-004,Partially (manual + REST Assured),Not started
+REQ-06,Role-based access is enforced on all endpoints,cross-cutting,Yes (REST Assured security checks),Not started

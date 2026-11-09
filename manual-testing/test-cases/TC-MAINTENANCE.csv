@@ -1,0 +1,6 @@
+ID,Title,Preconditions,Steps,Expected Result,Priority
+TC-MT-001,Register a maintenance record,Admin logged in; vehicle exists,"1. Register schedule with a future date",Record created status 'scheduled'; vehicle status becomes 'maintenance',P1
+TC-MT-002,Schedule maintenance for an unavailable vehicle,Vehicle already in maintenance,"1. Register another schedule for same vehicle",Record created but flagged; vehicle status unchanged (document actual vs expected),P3
+TC-MT-003,Enter invalid maintenance dates,Admin logged in,"1. Submit a past date",400 Bad Request,P2
+TC-MT-004,Verify vehicle availability after completion,Maintenance record exists,"1. Mark record complete",Vehicle status returns to 'available',P1
+TC-MT-005,Check maintenance history,Vehicle has past records,"1. Query maintenance by vehicleId",All historical records returned, newest first (sort to be implemented),P3
