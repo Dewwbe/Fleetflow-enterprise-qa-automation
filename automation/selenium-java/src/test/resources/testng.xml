@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="FleetFlow UI Suite">
+  <test name="Booking Smoke">
+    <classes>
+      <class name="fleetflow.tests.BookingTest"/>
+    </classes>
+  </test>
+</suite>
