@@ -1,0 +1,9 @@
+ID,Title,Preconditions,Steps,Expected Result,Priority
+TC-BK-001,Book an available vehicle,Employee logged in; vehicle v-001 available,"1. Go to Bookings 2. Select v-001 3. Enter valid date range 4. Submit",Booking created with status 'pending',P1
+TC-BK-002,Book an already reserved vehicle,Vehicle has an overlapping approved booking,"1. Select same vehicle 2. Enter overlapping dates 3. Submit",409 Conflict; booking rejected with a clear error,P1
+TC-BK-003,Request a vehicle without specifying dates,Employee logged in,"1. Submit booking form with no dates",400 Bad Request; validation message shown,P2
+TC-BK-004,Request a vehicle for an invalid date range,Employee logged in,"1. Set end date before start date 2. Submit",400 Bad Request; validation message shown,P2
+TC-BK-005,Approve a booking,Fleet manager logged in; booking is pending,"1. Open booking 2. Click Approve",Status changes to 'approved'; vehicle status becomes 'reserved',P1
+TC-BK-006,Reject a booking,Fleet manager logged in; booking is pending,"1. Open booking 2. Click Reject",Status changes to 'rejected' with a reason,P2
+TC-BK-007,Approve the same booking twice,Booking already approved,"1. Click Approve again",409 Conflict; no state change,P2
+TC-BK-008,Concurrent overlapping bookings (double booking),Two employees request same vehicle, same window, same time,"1. Fire two near-simultaneous booking requests via JMeter",Exactly one booking succeeds; the other returns 409,P1

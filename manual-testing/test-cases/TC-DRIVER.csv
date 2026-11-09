@@ -1,0 +1,6 @@
+ID,Title,Preconditions,Steps,Expected Result,Priority
+TC-DR-001,Assign an available driver,Approved booking exists; driver is available and licence valid,"1. Assign driver to booking",Trip created with status 'scheduled'; driver marked unavailable,P1
+TC-DR-002,Assign an unavailable driver,Driver d-003 is unavailable,"1. Attempt assignment",409 Conflict; assignment blocked,P1
+TC-DR-003,Assign a driver with an expired licence,Driver d-002 licence expired,"1. Attempt assignment",422 Unprocessable Entity; assignment blocked,P1
+TC-DR-004,Assign same driver to overlapping trips,Driver already has an overlapping trip,"1. Attempt second assignment in overlapping window",409 Conflict; assignment blocked,P2
+TC-DR-005,Cancel an assigned trip,Trip is scheduled,"1. Cancel trip",Trip status 'cancelled'; driver becomes available again,P2
