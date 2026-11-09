@@ -1,0 +1,87 @@
+pipeline {
+  agent any
+
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+  }
+
+  environment {
+    COMPOSE_FILE = 'docker/docker-compose.yml'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Install & Lint') {
+      parallel {
+        stage('auth-service') { steps { dir('application/auth-service') { sh 'npm install' } } }
+        stage('vehicle-service') { steps { dir('application/vehicle-service') { sh 'npm install' } } }
+        stage('driver-service') { steps { dir('application/driver-service') { sh 'npm install' } } }
+        stage('booking-service') { steps { dir('application/booking-service') { sh 'npm install' } } }
+        stage('trip-service') { steps { dir('application/trip-service') { sh 'npm install' } } }
+        stage('maintenance-service') { steps { dir('application/maintenance-service') { sh 'npm install' } } }
+        stage('frontend') { steps { dir('application/frontend') { sh 'npm install' } } }
+      }
+    }
+
+    stage('SonarQube analysis') {
+      steps {
+        withSonarQubeEnv('fleetflow-sonar') {
+          sh 'sonar-scanner -Dsonar.projectKey=fleetflow -Dsonar.sources=application'
+        }
+      }
+    }
+
+    stage('Start stack') {
+      steps { sh 'docker compose -f $COMPOSE_FILE up -d --build' }
+    }
+
+    stage('API automation (REST Assured)') {
+      steps { dir('automation/rest-assured') { sh 'mvn -B test' } }
+    }
+
+    stage('BDD scenarios (Cucumber)') {
+      steps { dir('automation/cucumber') { sh 'mvn -B test' } }
+    }
+
+    stage('UI automation (Selenium + Playwright)') {
+      when { anyOf { branch 'main'; branch 'release/*' } }
+      parallel {
+        stage('Selenium') { steps { dir('automation/selenium-java') { sh 'mvn -B test' } } }
+        stage('Playwright') {
+          steps {
+            dir('automation/playwright-js') {
+              sh 'npm install && npx playwright install --with-deps && npx playwright test'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Performance (JMeter)') {
+      when { anyOf { branch 'main'; branch 'release/*' } }
+      steps {
+        sh '''
+          jmeter -n -t performance-testing/jmeter/booking-concurrency-test.jmx -l results-concurrency.jtl
+          jmeter -n -t performance-testing/jmeter/vehicle-search-load-test.jmx -l results-load.jtl
+        '''
+      }
+    }
+
+    stage('Security (OWASP ZAP)') {
+      when { anyOf { branch 'main'; branch 'release/*' } }
+      steps { sh 'bash security-testing/zap/zap-baseline.sh' }
+    }
+  }
+
+  post {
+    always {
+      sh 'docker compose -f $COMPOSE_FILE down -v || true'
+      junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'results-*.jtl, security-testing/zap/reports/*.html'
+    }
+  }
+}
